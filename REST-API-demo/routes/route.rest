@@ -1,0 +1,41 @@
+###
+GET http://localhost:3000/programming-languages/?page=1
+
+# ###
+# GET http://localhost:3000/programming-languages/3
+
+
+###
+POST http://localhost:3000/programming-languages
+Content-Type: application/json
+
+{   "name":"dart", 
+    "released_year": 2011, 
+    "githut_rank": 13, 
+    "pypl_rank": 20, 
+    "tiobe_rank": 25
+}
+
+###
+PUT http://localhost:3000/programming-languages/17
+Content-Type: application/json
+
+{   "name":"Matlab", 
+    "released_year": 1970, 
+    "githut_rank": 100, 
+    "pypl_rank": 100, 
+    "tiobe_rank": 100
+}
+
+
+# ###
+# PATCH http://localhost:3000/programming-languages/2
+# Content-Type: application/json
+
+# {
+#     "name": "Perl"
+# }
+
+
+### 
+DELETE http://localhost:3000/programming-languages/1

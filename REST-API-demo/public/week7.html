@@ -1,0 +1,245 @@
+<html>
+  <head>
+    <style type="text/css">
+        .language-line div {
+          display:      inline-block;
+          margin-right: 50px;
+        }
+        .language-line .language-name {
+          width: 100px;
+        }
+        .language-line .released_year {
+          width: 100px;
+        }
+        .language-line .githut-rank {
+          width: 100px;
+        }
+        .language-line .pypl_rank {
+          width: 100px;
+        }
+        .language-line .tiobe_rank {
+          width: 100px;
+        }
+      </style>
+  </head>
+
+
+
+  <body> 
+    <div id="flash" style="display: none;">
+      <div>
+        Messages
+      </div>
+      <div id="flash-message">        
+      </div>
+    </div>
+
+    <template id="language-line">
+        <li class="language-line">
+          <div class="lang-id">
+          </div>
+          <div class="language-name">
+          </div>
+          <div class="released_year">
+          </div>
+          <div class="githut-rank">
+          </div>
+          <div class="pypl_rank">
+          </div>
+          <div class="tiobe_rank">
+          </div>
+          <div>
+            <a href="#" class="edit">edit</a>
+          </div>
+          <div>
+            <a href="#" class="delete">delete</a>          
+          </div>
+        </li>  
+    </template>
+
+    <ol id="content">
+        <div class="language-rows">        
+        </div>
+        <br />
+        <button type="button" onClick="pageNumber -= 1; list(); return false;">&lt;&lt;</button>
+        <span id="current-page"></span>
+        <button type="button" onClick="pageNumber += 1; list(); return false;">&gt;&gt;</button>
+      </ol>
+
+    <div id="formfields">
+      <label for="langid">Language id:</label>
+      <input name="langid" id="langid" disabled>
+      <br />
+
+      <label for="name">Language name:</label>
+      <input name="name" id="name">
+      <br />
+
+      <label for="released_year">Release year:</label>
+      <input name="released_year" id="released_year">
+      <br />
+
+      <label for="githut_rank">githut rank:</label>
+      <input name="githut_rank" id="githut_rank">
+      <br />
+
+      <label for="pypl_rank">pypl rank:</label>
+      <input name="pypl_rank" id="pypl_rank">
+      <br />
+
+      <label for="tiobe_rank">tiobe rank:</label>
+      <input name="tiobe_rank" id="tiobe_rank">
+      <br />
+
+      <input type="submit" onclick="submit(); return false;" />
+    </div>
+
+    <script>
+      // array of objects currently shown in content
+      let langs = [];
+      let flashMessage = '';
+      let pageNumber = 1;
+
+      
+
+      function create(data) {
+          console.log(data)
+        // set body to data
+        fetch('/programming-languages', { 
+            method: 'POST',
+            body: JSON.stringify(data), 
+            headers: {"Content-type": "application/json" }
+        })
+          .then(r => r.json())
+          .then(({ message }) => (flashMessage = message))
+          .catch(err => {
+            flashMessage = err.message;
+          })
+          .then(list);
+      }
+
+      function remove(langId) {
+        fetch(`/programming-languages/${langId}`, { method: 'DELETE'})
+          .then(r => r.json())
+          .then(({ message }) => (flashMessage = message))
+          .catch(err => {
+            flashMessage = err.message;
+          })
+          .then(list);
+      }
+
+      function update(langId, data) {
+        // set body to data
+        fetch(`/programming-languages/${langId}`, { 
+            method: 'PUT', 
+            body: JSON.stringify(data), 
+            headers: {"Content-type": "application/json" }
+        })
+          .then(r => r.json())
+          .then(({ message }) => (flashMessage = message))
+          .catch(err => {
+            flashMessage = err.message;
+          })
+          .then(list);
+      }
+
+      function list() {
+        fetch(`/programming-languages?page=${pageNumber}`)
+          .then(r => r.json())
+          .then(({data}) => langs = data)
+          .catch(err => {
+            flashMessage = err.message;
+          })
+          .then(render);
+      }
+
+      // TODO
+      function read() {
+        fetch('/programming-languages/:id')
+          .then(r => r.json())
+          .then(({data}) => langs = data)
+          .catch(err => {
+            flashMessage = err.message;
+          })
+          .then(render)
+      }
+
+      // 
+      function render() {
+        // IF MULTIPLE MESSAGES
+        
+        if (flashMessage) {
+          document.getElementById('flash-message').innerHTML = flashMessage
+          document.getElementById('flash').style.display = 'block';
+        } else {
+          document.getElementById('flash').style.display = 'none';
+        }
+        
+        // el.innerHTML = '';
+
+        document.getElementById('current-page').innerHTML = pageNumber;
+        
+        const el = document.getElementById('content').querySelectorAll(".language-rows")[0]; 
+        el.innerHTML = '';
+        for (const [idx, lang] of langs.entries()) {
+          const li = document.getElementById('language-line').content.cloneNode(true);
+          li.querySelectorAll(".lang-id")[0].innerHTML = lang.id
+          li.querySelectorAll(".language-name")[0].innerHTML = lang.name
+          li.querySelectorAll(".released_year")[0].innerHTML = lang.released_year
+          li.querySelectorAll(".githut-rank")[0].innerHTML = lang.githut_rank
+          li.querySelectorAll(".pypl_rank")[0].innerHTML = lang.pypl_rank
+          li.querySelectorAll(".tiobe_rank")[0].innerHTML = lang.tiobe_rank
+          
+          
+          li.querySelectorAll("a.edit")[0].onclick = () => edit(idx)
+          li.querySelectorAll("a.delete")[0].onclick = () => remove(lang.id)
+
+
+
+          el.appendChild(li);
+        }
+      }
+
+      function submit() {
+        const langId = document.getElementById('langid').value;
+        const data = {
+          name: document.getElementById('name').value
+        };
+        if (document.getElementById('released_year').value) {
+          data.released_year = document.getElementById('released_year').value
+        }
+        if (document.getElementById('githut_rank').value) {
+          data.githut_rank = document.getElementById('githut_rank').value
+        }
+        if (document.getElementById('pypl_rank').value) {
+          data.pypl_rank = document.getElementById('pypl_rank').value
+        }
+        if (document.getElementById('tiobe_rank').value) {
+          data.tiobe_rank = document.getElementById('tiobe_rank').value
+        }
+
+        if (langId) {
+          update(langId, data);
+        } else {
+          create(data);
+        }
+        return false
+      }
+
+      // idx: index in langs (above)
+      function edit(idx) {
+        document.getElementById('langid').value = langs[idx].id
+        document.getElementById('name').value = langs[idx].name
+        document.getElementById('released_year').value = langs[idx].released_year
+        document.getElementById('githut_rank').value = langs[idx].githut_rank
+        document.getElementById('pypl_rank').value = langs[idx].pypl_rank
+        document.getElementById('tiobe_rank').value = langs[idx].tiobe_rank
+        // ...
+        return false
+      }
+
+      list();
+
+    </script>  
+  </body>
+</html>
