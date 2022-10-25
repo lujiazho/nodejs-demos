@@ -1,0 +1,55 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    #volumes:
+    #  - ./app/postgres/data:/var/lib/postgresql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=1
+  adminer:
+    image: adminer:latest
+    links:
+      - postgres
+    restart: always
+    ports:
+      - 8080:8080
+  api:
+    image: node:18
+    container_name: api
+    # to keep the container running
+    command: "sleep infinity"
+    links:
+      - postgres
+    volumes:
+      # # use a host directory, to save work
+      - ./app/api:/usr/src/app
+    working_dir: /usr/src/app
+    ports:
+      - 3000:3000
+    environment:
+      - PGHOST=postgres
+      - PGUSER=postgres
+      - PGPASSWORD=1
+      - PGDATABASE=ee547_demo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

@@ -1,0 +1,28 @@
+{
+  user(userId: 1){
+    name,
+    follows {
+    userId
+    name
+    }
+  }
+}
+
+{
+  users{
+    name,
+    follows {
+      userId
+      name
+    }
+  }
+}
+
+{
+  articles{
+    title,
+    author {
+      name
+    }
+  }
+}
